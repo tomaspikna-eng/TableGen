@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CardScoresPro – Vytvoriť turnaj</title>
+  <style>
+    :root {
+      --bg: #07090d;
+      --panel: #10151d;
+      --panel-2: #151c26;
+      --border: rgba(212, 175, 55, 0.22);
+      --border-strong: rgba(212, 175, 55, 0.45);
+      --text: #f4f6fb;
+      --muted: #9ea7b7;
+      --gold: #d4af37;
+      --gold-soft: rgba(212, 175, 55, 0.16);
+      --danger: #ff6b6b;
+      --success: #56d39b;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(212, 175, 55, 0.08), transparent 24%),
+        radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent 22%),
+        linear-gradient(180deg, #06080c 0%, #090d13 100%);
+      color: var(--text);
+    }
+
+    .app {
+      width: min(1500px, calc(100% - 32px));
+      margin: 22px auto 48px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 18px 22px;
+      background: rgba(16, 21, 29, 0.84);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.03em;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--gold-soft);
+      color: var(--gold);
+      border: 1px solid var(--border-strong);
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(18, 23, 31, 0.98), rgba(12, 17, 24, 0.98));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+
+    .card-subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .input, .textarea, .select {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 14px 15px;
+      outline: none;
+      transition: 0.2s ease;
+      font-size: 0.98rem;
+    }
+
+    .input:focus, .textarea:focus, .select:focus {
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+    }
+
+    .textarea { min-height: 100px; resize: vertical; }
+
+    .participants-tools {
+      display: grid;
+      grid-template-columns: 1fr 140px auto;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #d4af37, #f1d47a);
+      color: #131313;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-danger {
+      background: rgba(255, 107, 107, 0.12);
+      color: #ffb2b2;
+      border: 1px solid rgba(255, 107, 107, 0.24);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .participants-list, .scoreboard-list, .tables-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .participant-item, .score-item, .table-item {
+      display: grid;
+      align-items: center;
+      gap: 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 14px 16px;
+    }
+
+    .participant-item {
+      grid-template-columns: 1fr auto auto auto;
+    }
+
+    .score-item {
+      grid-template-columns: 52px 1fr auto auto;
+    }
+
+    .table-item {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+    }
+
+    .rank {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--gold-soft);
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .name {
+      font-weight: 700;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .score-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .score-value {
+      min-width: 40px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .table-players {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .table-player {
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(212, 175, 55, 0.08);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      color: #f7e9b6;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .empty {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.12);
+      color: var(--muted);
+      text-align: center;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .timer-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(212, 175, 55, 0.07);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      margin-bottom: 16px;
+    }
+
+    .timer-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--gold);
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .app { width: min(100% - 20px, 100%); }
+      .topbar { padding: 16px; position: static; }
+      .grid-2, .participants-tools, .stats { grid-template-columns: 1fr; }
+      .participant-item, .score-item, .table-item { grid-template-columns: 1fr; }
+      .button-row { width: 100%; }
+      .button-row button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>Vytvoriť turnaj &amp; Lobby</h1>
+        <span>Fáza 1 • prepojené nastavenia, účastníci, stoly, skóre a čas bez refreshu</span>
+      </div>
+      <div class="status-badge" id="tournamentStatus">Príprava turnaja</div>
+    </header>
+
+    <main class="layout">
+      <section class="stack">
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Nastavenie turnaja</h2>
+              <p class="card-subtitle">Základné údaje a pravidlá rozloženia stolov.</p>
+            </div>
+            <div class="pill" id="gameTypePill">Typ hry: Žolík</div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="tournamentName">Názov turnaja</label>
+              <input class="input" id="tournamentName" value="Večerný Žolíkový turnaj" />
+            </div>
+            <div class="field">
+              <label for="location">Miesto konania</label>
+              <input class="input" id="location" value="Klubová miestnosť" />
+            </div>
+            <div class="field">
+              <label for="gameType">Typ hry</label>
+              <select class="select" id="gameType">
+                <option>Žolík</option>
+                <option>Rummy</option>
+                <option>Kanasta</option>
+                <option>Iné</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="playersPerTable">Počet účastníkov na stole</label>
+              <input class="input" id="playersPerTable" type="number" min="2" max="10" value="4" />
+            </div>
+            <div class="field">
+              <label for="advanceCount">Počet postupujúcich do ďalšieho kola</label>
+              <input class="input" id="advanceCount" type="number" min="1" max="64" value="8" />
+            </div>
+            <div class="field">
+              <label for="roundMinutes">Dĺžka kola v minútach</label>
+              <input class="input" id="roundMinutes" type="number" min="1" max="300" value="35" />
+            </div>
+          </div>
+
+          <div class="field" style="margin-top: 14px;">
+            <label for="description">Poznámka / popis</label>
+            <textarea class="textarea" id="description">Prípravná lobby verzia turnaja. Po spustení sa hráči automaticky rozdelia na stoly a skóre sa priebežne mení bez obnovenia stránky.</textarea>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Účastníci</h2>
+              <p class="card-subtitle">Pridávanie, odoberanie a živé prepočítanie počtu hráčov.</p>
+            </div>
+            <div class="pill"><span id="participantsCount">0</span>&nbsp;hráčov</div>
+          </div>
+
+          <div class="participants-tools">
+            <input class="input" id="participantName" placeholder="Meno účastníka" />
+            <input class="input" id="participantScore" type="number" value="0" placeholder="Skóre" />
+            <button class="btn-primary" id="addParticipantBtn">Pridať účastníka</button>
+          </div>
+
+          <div class="button-row" style="margin-bottom:16px;">
+            <button class="btn-secondary" id="generateTablesBtn">Navrhnúť rozloženie stolov</button>
+            <button class="btn-secondary" id="shuffleTablesBtn">Zamiešať stoly</button>
+            <button class="btn-primary" id="startTournamentBtn">Spustiť lobby</button>
+            <button class="btn-danger" id="clearParticipantsBtn">Vymazať účastníkov</button>
+          </div>
+
+          <div class="participants-list" id="participantsList"></div>
+        </article>
+      </section>
+
+      <section class="stack">
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Lobby turnaja</h2>
+              <p class="card-subtitle">Živý stav turnaja, prehľad stolov a okamžitá aktualizácia dát.</p>
+            </div>
+            <div class="pill" id="liveState">Čaká na spustenie</div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">Počet účastníkov</div>
+              <div class="stat-value" id="statParticipants">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Počet stolov</div>
+              <div class="stat-value" id="statTables">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Postupujúci</div>
+              <div class="stat-value" id="statAdvance">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Najvyššie skóre</div>
+              <div class="stat-value" id="statTopScore">0</div>
+            </div>
+          </div>
+
+          <div class="timer-box">
+            <div>
+              <div class="muted">Čas kola</div>
+              <div class="timer-value" id="timerValue">35:00</div>
+            </div>
+            <div class="button-row">
+              <button class="btn-primary" id="toggleTimerBtn">Spustiť čas</button>
+              <button class="btn-secondary" id="resetTimerBtn">Reset času</button>
+            </div>
+          </div>
+
+          <div class="field" style="margin-bottom: 14px;">
+            <label>Info turnaja</label>
+            <div class="empty" id="tournamentInfo"></div>
+          </div>
+
+          <div>
+            <div class="card-header" style="margin-bottom:10px;">
+              <div>
+                <h3 class="card-title" style="font-size:0.98rem;">Návrh rozloženia stolov</h3>
+                <p class="card-subtitle">Automatický návrh podľa počtu hráčov a kapacity stolov.</p>
+              </div>
+            </div>
+            <div class="tables-list" id="tablesList"></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Rebríček hráčov</h2>
+              <p class="card-subtitle">Zoradené podľa skóre, najlepší hráči sú navrchu.</p>
+            </div>
+            <div class="pill">Real-time skóre</div>
+          </div>
+          <div class="scoreboard-list" id="scoreboardList"></div>
+          <div class="footer-note">Táto verzia beží kompletne v prehliadači. Pri napojení na Supabase vieme neskôr pridať zdieľaný multiplayer a perzistenciu dát.</div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      tournament: {
+        name: 'Večerný Žolíkový turnaj',
+        location: 'Klubová miestnosť',
+        gameType: 'Žolík',
+        description: 'Prípravná lobby verzia turnaja. Po spustení sa hráči automaticky rozdelia na stoly a skóre sa priebežne mení bez obnovenia stránky.',
+        playersPerTable: 4,
+        advanceCount: 8,
+        roundMinutes: 35,
+        started: false
+      },
+      participants: [
+        { id: crypto.randomUUID(), name: 'Marek', score: 24, tableId: null },
+        { id: crypto.randomUUID(), name: 'Janka', score: 31, tableId: null },
+        { id: crypto.randomUUID(), name: 'Peter', score: 12, tableId: null },
+        { id: crypto.randomUUID(), name: 'Zuzana', score: 29, tableId: null },
+        { id: crypto.randomUUID(), name: 'Roman', score: 18, tableId: null },
+        { id: crypto.randomUUID(), name: 'Ivana', score: 37, tableId: null },
+        { id: crypto.randomUUID(), name: 'Juraj', score: 15, tableId: null },
+        { id: crypto.randomUUID(), name: 'Monika', score: 27, tableId: null }
+      ],
+      tables: [],
+      timer: {
+        totalSeconds: 35 * 60,
+        remainingSeconds: 35 * 60,
+        intervalId: null,
+        running: false
+      }
+    };
+
+    const els = {
+      tournamentName: document.getElementById('tournamentName'),
+      location: document.getElementById('location'),
+      gameType: document.getElementById('gameType'),
+      description: document.getElementById('description'),
+      playersPerTable: document.getElementById('playersPerTable'),
+      advanceCount: document.getElementById('advanceCount'),
+      roundMinutes: document.getElementById('roundMinutes'),
+      participantName: document.getElementById('participantName'),
+      participantScore: document.getElementById('participantScore'),
+      addParticipantBtn: document.getElementById('addParticipantBtn'),
+      participantsList: document.getElementById('participantsList'),
+      participantsCount: document.getElementById('participantsCount'),
+      scoreboardList: document.getElementById('scoreboardList'),
+      generateTablesBtn: document.getElementById('generateTablesBtn'),
+      shuffleTablesBtn: document.getElementById('shuffleTablesBtn'),
+      clearParticipantsBtn: document.getElementById('clearParticipantsBtn'),
+      startTournamentBtn: document.getElementById('startTournamentBtn'),
+      tablesList: document.getElementById('tablesList'),
+      statParticipants: document.getElementById('statParticipants'),
+      statTables: document.getElementById('statTables'),
+      statAdvance: document.getElementById('statAdvance'),
+      statTopScore: document.getElementById('statTopScore'),
+      tournamentInfo: document.getElementById('tournamentInfo'),
+      timerValue: document.getElementById('timerValue'),
+      toggleTimerBtn: document.getElementById('toggleTimerBtn'),
+      resetTimerBtn: document.getElementById('resetTimerBtn'),
+      liveState: document.getElementById('liveState'),
+      tournamentStatus: document.getElementById('tournamentStatus'),
+      gameTypePill: document.getElementById('gameTypePill')
+    };
+
+    function syncTournamentFromInputs() {
+      state.tournament.name = els.tournamentName.value.trim() || 'Bez názvu turnaja';
+      state.tournament.location = els.location.value.trim() || 'Nezadané miesto';
+      state.tournament.gameType = els.gameType.value;
+      state.tournament.description = els.description.value.trim() || 'Bez popisu';
+      state.tournament.playersPerTable = Math.max(2, Number(els.playersPerTable.value) || 4);
+      state.tournament.advanceCount = Math.max(1, Number(els.advanceCount.value) || 1);
+      state.tournament.roundMinutes = Math.max(1, Number(els.roundMinutes.value) || 35);
+      state.timer.totalSeconds = state.tournament.roundMinutes * 60;
+      if (!state.timer.running) {
+        state.timer.remainingSeconds = state.timer.totalSeconds;
+      }
+      els.gameTypePill.textContent = `Typ hry: ${state.tournament.gameType}`;
+    }
+
+    function formatTime(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+      const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+      return `${minutes}:${seconds}`;
+    }
+
+    function sortParticipants() {
+      state.participants.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'sk'));
+    }
+
+    function generateTables(shuffle = false) {
+      syncTournamentFromInputs();
+      if (!state.participants.length) {
+        state.tables = [];
+        render();
+        return;
+      }
+
+      const participants = [...state.participants];
+      if (shuffle) participants.sort(() => Math.random() - 0.5);
+      else sortParticipants();
+
+      const tableSize = state.tournament.playersPerTable;
+      const totalPlayers = participants.length;
+      const tableCount = Math.ceil(totalPlayers / tableSize);
+      const tables = Array.from({ length: tableCount }, (_, index) => ({
+        id: `table-${index + 1}`,
+        number: index + 1,
+        players: [],
+        visibleTime: formatTime(state.timer.remainingSeconds)
+      }));
+
+      participants.forEach((participant, index) => {
+        const tableIndex = index % tableCount;
+        participant.tableId = tables[tableIndex].id;
+        tables[tableIndex].players.push(participant.id);
+      });
+
+      state.tables = tables;
+    }
+
+    function addParticipant() {
+      const name = els.participantName.value.trim();
+      const score = Number(els.participantScore.value) || 0;
+      if (!name) return;
+
+      state.participants.push({
+        id: crypto.randomUUID(),
+        name,
+        score,
+        tableId: null
+      });
+
+      els.participantName.value = '';
+      els.participantScore.value = '0';
+      generateTables();
+      render();
+    }
+
+    function removeParticipant(id) {
+      state.participants = state.participants.filter(player => player.id !== id);
+      generateTables();
+      render();
+    }
+
+    function updateScore(id, delta) {
+      const player = state.participants.find(item => item.id === id);
+      if (!player) return;
+      player.score += delta;
+      generateTables();
+      render();
+    }
+
+    function startTournament() {
+      state.tournament.started = true;
+      els.liveState.textContent = 'Lobby aktívna';
+      els.tournamentStatus.textContent = 'Turnaj pripravený';
+      generateTables();
+      render();
+    }
+
+    function toggleTimer() {
+      if (state.timer.running) {
+        clearInterval(state.timer.intervalId);
+        state.timer.intervalId = null;
+        state.timer.running = false;
+        els.toggleTimerBtn.textContent = 'Spustiť čas';
+      } else {
+        state.timer.running = true;
+        els.toggleTimerBtn.textContent = 'Pozastaviť čas';
+        state.timer.intervalId = setInterval(() => {
+          if (state.timer.remainingSeconds > 0) {
+            state.timer.remainingSeconds -= 1;
+            renderTimerOnly();
+          } else {
+            clearInterval(state.timer.intervalId);
+            state.timer.intervalId = null;
+            state.timer.running = false;
+            els.toggleTimerBtn.textContent = 'Spustiť čas';
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(state.timer.intervalId);
+      state.timer.intervalId = null;
+      state.timer.running = false;
+      state.timer.remainingSeconds = state.tournament.roundMinutes * 60;
+      els.toggleTimerBtn.textContent = 'Spustiť čas';
+      render();
+    }
+
+    function clearParticipants() {
+      state.participants = [];
+      state.tables = [];
+      render();
+    }
+
+    function renderParticipants() {
+      if (!state.participants.length) {
+        els.participantsList.innerHTML = '<div class="empty">Zatiaľ nie sú pridaní žiadni účastníci.</div>';
+        return;
+      }
+
+      sortParticipants();
+      els.participantsList.innerHTML = state.participants.map((player, index) => `
+        <div class="participant-item">
+          <div>
+            <div class="name">${index + 1}. ${player.name}</div>
+            <div class="muted">Skóre: ${player.score} • ${player.tableId ? 'Priradený stôl' : 'Bez stola'}</div>
+          </div>
+          <div class="pill">${player.tableId ? player.tableId.replace('table-', 'Stôl ') : 'Čaká'}</div>
+          <button class="icon-btn" onclick="window.appActions.bumpScore('${player.id}')">+1</button>
+          <button class="btn-danger" onclick="window.appActions.removeParticipant('${player.id}')">Odstrániť</button>
+        </div>
+      `).join('');
+    }
+
+    function renderScoreboard() {
+      if (!state.participants.length) {
+        els.scoreboardList.innerHTML = '<div class="empty">Rebríček sa zobrazí po pridaní hráčov.</div>';
+        return;
+      }
+
+      sortParticipants();
+      els.scoreboardList.innerHTML = state.participants.map((player, index) => `
+        <div class="score-item">
+          <div class="rank">${index + 1}</div>
+          <div>
+            <div class="name">${player.name}</div>
+            <div class="muted">${index < state.tournament.advanceCount ? 'Postupová pozícia' : 'Mimo postupového pásma'}</div>
+          </div>
+          <div class="score-controls">
+            <button class="icon-btn" onclick="window.appActions.updateScore('${player.id}', -1)">−</button>
+            <div class="score-value">${player.score}</div>
+            <button class="icon-btn" onclick="window.appActions.updateScore('${player.id}', 1)">+</button>
+          </div>
+          <div class="pill">${player.tableId ? player.tableId.replace('table-', 'Stôl ') : 'Bez stola'}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTables() {
+      if (!state.tables.length) {
+        els.tablesList.innerHTML = '<div class="empty">Počet stolov sa navrhne automaticky po pridaní hráčov.</div>';
+        return;
+      }
+
+      els.tablesList.innerHTML = state.tables.map(table => {
+        const players = table.players
+          .map(playerId => state.participants.find(player => player.id === playerId))
+          .filter(Boolean);
+
+        return `
+          <div class="table-item">
+            <div class="rank">${table.number}</div>
+            <div>
+              <div class="name">Stôl ${table.number}</div>
+              <div class="muted">${players.length} / ${state.tournament.playersPerTable} hráčov • Čas: ${formatTime(state.timer.remainingSeconds)}</div>
+              <div class="table-players">
+                ${players.map(player => `<div class="table-player">${player.name}</div>`).join('')}
+              </div>
+            </div>
+            <div class="pill">Aktívny stôl</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSummary() {
+      const totalPlayers = state.participants.length;
+      const totalTables = state.tables.length;
+      const topScore = totalPlayers ? Math.max(...state.participants.map(player => player.score)) : 0;
+
+      els.participantsCount.textContent = totalPlayers;
+      els.statParticipants.textContent = totalPlayers;
+      els.statTables.textContent = totalTables;
+      els.statAdvance.textContent = state.tournament.advanceCount;
+      els.statTopScore.textContent = topScore;
+      els.tournamentInfo.innerHTML = `
+        <strong>${state.tournament.name}</strong><br>
+        ${state.tournament.location} • ${state.tournament.gameType}<br>
+        ${state.tournament.description}<br>
+        Hráči na stole: ${state.tournament.playersPerTable} • Postupujúci: ${state.tournament.advanceCount}
+      `;
+    }
+
+    function renderTimerOnly() {
+      els.timerValue.textContent = formatTime(state.timer.remainingSeconds);
+      renderTables();
+    }
+
+    function render() {
+      syncTournamentFromInputs();
+      els.timerValue.textContent = formatTime(state.timer.remainingSeconds);
+      renderParticipants();
+      renderScoreboard();
+      renderTables();
+      renderSummary();
+    }
+
+    els.addParticipantBtn.addEventListener('click', addParticipant);
+    els.generateTablesBtn.addEventListener('click', () => {
+      generateTables(false);
+      render();
+    });
+    els.shuffleTablesBtn.addEventListener('click', () => {
+      generateTables(true);
+      render();
+    });
+    els.startTournamentBtn.addEventListener('click', startTournament);
+    els.toggleTimerBtn.addEventListener('click', toggleTimer);
+    els.resetTimerBtn.addEventListener('click', resetTimer);
+    els.clearParticipantsBtn.addEventListener('click', clearParticipants);
+
+    [
+      els.tournamentName,
+      els.location,
+      els.gameType,
+      els.description,
+      els.playersPerTable,
+      els.advanceCount,
+      els.roundMinutes
+    ].forEach(input => input.addEventListener('input', () => {
+      syncTournamentFromInputs();
+      generateTables();
+      render();
+    }));
+
+    els.participantName.addEventListener('keydown', event => {
+      if (event.key === 'Enter') addParticipant();
+    });
+
+    window.appActions = {
+      removeParticipant,
+      updateScore,
+      bumpScore: (id) => updateScore(id, 1)
+    };
+
+    generateTables();
+    render();
+  </script>
+</body>
+</html>
